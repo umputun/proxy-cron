@@ -30,5 +30,6 @@ COPY --from=base /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=base /etc/passwd /etc/passwd
 COPY --from=base /etc/group /etc/group
 
+USER app
 WORKDIR /srv
 ENTRYPOINT ["/srv/proxy-cron"]
