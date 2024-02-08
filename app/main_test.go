@@ -13,7 +13,7 @@ import (
 )
 
 func TestProxyHandler_WithAllowedTime(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"message": "Hello, world"}`))
@@ -34,7 +34,7 @@ func TestProxyHandler_WithAllowedTime(t *testing.T) {
 }
 
 func TestProxyHandler_WithNotAllowedTime(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"message": "Hello, world"}`))
@@ -56,7 +56,7 @@ func TestProxyHandler_WithNotAllowedTime(t *testing.T) {
 }
 
 func TestProxyHandler_WithNotAllowedTimeUnderscored(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"message": "Hello, world"}`))
@@ -78,7 +78,7 @@ func TestProxyHandler_WithNotAllowedTimeUnderscored(t *testing.T) {
 }
 
 func TestProxyHandler_WithNInvalidCron(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"message": "Hello, world"}`))
@@ -100,7 +100,7 @@ func TestProxyHandler_WithNInvalidCron(t *testing.T) {
 func TestProxyHandler_WithNotAllowedTimeCached(t *testing.T) {
 	// simulate a request within the allowed time to cache the response
 	reqCount := 0
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		reqCount++
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
