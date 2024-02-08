@@ -29,7 +29,7 @@ For macOS users, proxy-cron can be installed using Homebrew: `brew install umput
 
 To use the proxy, send HTTP requests to it with the following query parameters `endpoint` and `crontab`. For example:
 ```
-    curl "http://localhost:8080/?endpoint=http://example.com&crontab=* 8-16 * * 1-5"
+curl "http://localhost:8080/?endpoint=http://example.com&crontab=* 8-16 * * 1-5"
 ```
 note: the `crontab` parameter can be passed with `_` instead of spaces to avoid the need for URL encoding, 
 i.e. `* 8-16 * * 1-5` becomes `*_8-16_*_* _1-5`.
