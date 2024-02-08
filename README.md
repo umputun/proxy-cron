@@ -1,23 +1,22 @@
 [![Build Status](https://github.com/umputun/proxy-cron/workflows/build/badge.svg)](https://github.com/umputun/proxy-cron/actions) [![Coverage Status](https://coveralls.io/repos/github/umputun/proxy-cron/badge.svg?branch=master)](https://coveralls.io/github/umputun/proxy-cron?branch=master)
 
 
-`proxy-cron` is a simple HTTP proxy server designed to handle requests based on crontab-like scheduling. It allows requests to be proxied during specified times and serves cached responses when requests are made outside the allowed schedule. This is particularly useful for managing systems that aren't running 24/7, to avoid unnecessary alerts or checks during their downtime.
+Proxy-cron is a simple HTTP proxy server designed to handle requests based on crontab-like scheduling. It enables requests to be proxied during specified times and serves cached responses when requests are made outside the allowed schedule. This is particularly useful for managing systems that aren't operational 24/7, to prevent unnecessary alerts or checks during their downtime.
 
 ## why it's needed
 
-Imagine you have a service that is not running 24/7, but you still want to monitor it. You can't just use a regular monitoring system because it will alert you every time the service is down. You can't use a cron job to check the service because it will only run at specific times. You need a way to proxy requests to the service only when it's running, and serve cached responses when it's not.
+Consider a service that does not operate around the clock, yet requires monitoring. Utilizing a regular monitoring system is not feasible, as it would generate alerts every time the service is offline. Similarly, a cron job is not a solution, as it only executes at specific intervals. A method is needed to proxy requests to the service only when it's active and serve cached responses when it's not.
 
-With `proxy-cron`, you can define a schedule directly in the url for when requests should be proxied to the service. During the allowed times, requests are proxied as usual. When requests are made outside of the allowed times, `proxy-cron` serves the last cached response. This way, you can monitor the service without being alerted every time it's down.
+With proxy-cron, users can specify a schedule in the URL, determining when requests should be proxied to the service. During these permitted times, requests are proxied as usual. However, when requests occur outside of these times, proxy-cron provides the last cached response. This enables monitoring of the service without triggering alerts each time it becomes unavailable.
 
 ## how it works
 
-`proxy-cron` runs as a simple HTTP server handling `GET` request only. The request must contain two query parameters:
+Proxy-cron operates as a straightforward HTTP server, processing only `GET` requests. Each request must include two query parameters:
+ 
 - `endpoint`: The actual endpoint URL you want to proxy.
 - `crontab`: The crontab schedule expression defining the allowed times for proxying requests.
 
-When a request is made to it, it checks the `crontab` query parameter to see if the request is allowed at the current time.
-If the request is allowed, `proxy-cron` proxies the request to the specified endpoint, caches the response, and serves it to the client.
-If the request is not allowed, `proxy-cron` serves the last cached response.
+Upon receiving a request, proxy-cron evaluates the 'crontab' query parameter to determine if the current time falls within the allowed period. If so, proxy-cron proxies the request to the specified endpoint, caches the response, and forwards it to the client. If the request is made outside the permitted time, proxy-cron supplies the last cached response instead.
 
 ## application options
 
