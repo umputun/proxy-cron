@@ -32,6 +32,8 @@ type options struct {
 		Idle    time.Duration `long:"idle" env:"IDLE" default:"15s" description:"idle timeout"`
 	} `group:"timeout" namespace:"timeout" env-namespace:"TIMEOUT"`
 
+	MaxBodySize int64 `long:"max-size" env:"MAX_SIZE" default:"1048576" description:"max body size in bytes"`
+
 	NoColors bool `long:"no-colors" env:"NO_COLORS" description:"disable colorized logging"`
 	Dbg      bool `long:"dbg" env:"DEBUG" description:"debug mode"`
 }
@@ -77,9 +79,10 @@ func main() {
 func run(ctx context.Context, opts options) error {
 	log.Printf("[INFO] proxy is running on port %d", opts.Port)
 
+	handler := rest.Wrap(http.HandlerFunc(proxyHandler(opts.MaxBodySize)), rest.AppInfo("proxy-cron", "umputun", revision), rest.Ping)
 	srv := http.Server{
 		Addr:         fmt.Sprintf(":%d", opts.Port),
-		Handler:      rest.Wrap(http.HandlerFunc(proxyHandler), rest.AppInfo("proxy-cron", "umputun", revision), rest.Ping),
+		Handler:      handler,
 		ReadTimeout:  opts.Timeout.Read,
 		WriteTimeout: opts.Timeout.Write,
 		IdleTimeout:  opts.Timeout.Idle,
@@ -111,72 +114,75 @@ var (
 )
 
 // proxyHandler handles incoming proxy requests
-func proxyHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	log.Printf("[INFO] proxy request: %s", r.URL.String())
+func proxyHandler(maxBodySize int64) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		log.Printf("[INFO] proxy request: %s", r.URL.String())
 
-	endpoint := r.URL.Query().Get("endpoint")
-	crontab := r.URL.Query().Get("crontab")
-	crontab = strings.ReplaceAll(crontab, "_", " ") // replace underscores with spaces to allow easier crontab input
+		endpoint := r.URL.Query().Get("endpoint")
+		crontab := r.URL.Query().Get("crontab")
+		crontab = strings.ReplaceAll(crontab, "_", " ") // replace underscores with spaces to allow easier crontab input
 
-	allowed, err := isAllowedTime(crontab)
-	if err != nil {
-		log.Printf("[WARN] failed to check if request is allowed: %v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if allowed {
-		// request is within the allowed time, fetch the response from the endpoint
-		resp, err := client.Get(endpoint)
+		allowed, err := isAllowedTime(crontab)
 		if err != nil {
+			log.Printf("[WARN] failed to check if request is allowed: %v", err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer resp.Body.Close()
 
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if allowed {
+			// request is within the allowed time, fetch the response from the endpoint
+			resp, err := client.Get(endpoint)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			defer resp.Body.Close()
+
+			limitedReader := io.LimitReader(resp.Body, maxBodySize) // limit the response body to 1MB
+			body, err := io.ReadAll(limitedReader)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			responseBody := string(body)
+
+			// update the cache
+			cacheMutex.Lock()
+			responseCache[endpoint] = cachedResponse{body: responseBody, headers: resp.Header}
+			cacheMutex.Unlock()
+
+			// copy original headers to the response writer
+			copyHeaders(w.Header(), resp.Header)
+			if _, err := fmt.Fprint(w, responseBody); err != nil {
+				log.Printf("[WARN] failed to write response: %v", err)
+				return
+			}
+			log.Printf("[DEBUG] non-cached response from %s: %s", endpoint, strings.ReplaceAll(responseBody, "\n", " "))
 			return
 		}
-		responseBody := string(body)
 
-		// update the cache
-		cacheMutex.Lock()
-		responseCache[endpoint] = cachedResponse{body: responseBody, headers: resp.Header}
-		cacheMutex.Unlock()
+		// request outside the allowed time, return the cached response
+		cacheMutex.RLock()
+		cachedResponse, ok := responseCache[endpoint]
+		cacheMutex.RUnlock()
 
-		// copy original headers to the response writer
-		copyHeaders(w.Header(), resp.Header)
-		if _, err := fmt.Fprint(w, responseBody); err != nil {
+		if !ok {
+			http.Error(w, "No cached response available", http.StatusNotFound)
+			return
+		}
+
+		// copy cached headers to the response writer
+		copyHeaders(w.Header(), cachedResponse.headers)
+		if _, err := fmt.Fprint(w, cachedResponse.body); err != nil {
 			log.Printf("[WARN] failed to write response: %v", err)
 			return
 		}
-		log.Printf("[DEBUG] non-cached response from %s: %s", endpoint, strings.ReplaceAll(responseBody, "\n", " "))
-		return
+		log.Printf("[DEBUG] cached response from %s: %s", endpoint, strings.ReplaceAll(cachedResponse.body, "\n", " "))
 	}
-
-	// request outside the allowed time, return the cached response
-	cacheMutex.RLock()
-	cachedResponse, ok := responseCache[endpoint]
-	cacheMutex.RUnlock()
-
-	if !ok {
-		http.Error(w, "No cached response available", http.StatusNotFound)
-		return
-	}
-
-	// copy cached headers to the response writer
-	copyHeaders(w.Header(), cachedResponse.headers)
-	if _, err := fmt.Fprint(w, cachedResponse.body); err != nil {
-		log.Printf("[WARN] failed to write response: %v", err)
-		return
-	}
-	log.Printf("[DEBUG] cached response from %s: %s", endpoint, strings.ReplaceAll(cachedResponse.body, "\n", " "))
 }
 
 // isAllowedTime checks if the current time falls within the crontab schedule

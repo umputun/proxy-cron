@@ -39,6 +39,7 @@ i.e. `* 8-16 * * 1-5` becomes `*_8-16_*_* _1-5`.
 
 ```
       --port=            port to listen on (default: 8080) [$PORT]
+      --max-size=        max body size in bytes (default: 1048576) [$MAX_SIZE]
       --no-colors        disable colorized logging [$NO_COLORS]
       --dbg              debug mode [$DEBUG]
 
