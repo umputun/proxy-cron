@@ -1,6 +1,3 @@
-signs:
-  - artifacts: checksum
-
 project_name: proxy-cron
 dist: .bin
 builds:
