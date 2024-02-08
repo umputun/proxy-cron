@@ -19,11 +19,10 @@ jobs:
         id: go
 
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: build and test
         run: |
-          chmod 0600 ./pkg/executor/testdata/test_ssh_key
           go test -v -timeout=100s -covermode=count -coverprofile=$GITHUB_WORKSPACE/profile.cov_tmp ./...
           cat $GITHUB_WORKSPACE/profile.cov_tmp | grep -v "mocks" | grep -v "_mock" > $GITHUB_WORKSPACE/profile.cov
 
