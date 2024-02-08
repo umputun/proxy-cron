@@ -18,6 +18,23 @@ Proxy-cron operates as a straightforward HTTP server, processing only `GET` requ
 
 Upon receiving a request, proxy-cron evaluates the 'crontab' query parameter to determine if the current time falls within the allowed period. If so, proxy-cron proxies the request to the specified endpoint, caches the response, and forwards it to the client. If the request is made outside the permitted time, proxy-cron supplies the last cached response instead.
 
+## installation
+
+proxy-cron is available as a Docker image and be loaded from the docker hub as `umputun/proxy-cron` and from the GitHub Container Registry as
+`ghcr.io/umputun/proxy-cron`. Binary releases are also available on the [releases page](https://githup.com/umputun/proxy-cron/releases).
+
+For macOS users, proxy-cron can be installed using Homebrew: `brew install umputun/tap/proxy-cron`.
+
+## usage
+
+To use the proxy, send HTTP requests to it with the following query parameters `endpoint` and `crontab`. For example:
+```
+    curl "http://localhost:8080/?endpoint=http://example.com&crontab=* 8-16 * * 1-5"
+```
+note: the `crontab` parameter can be passed with `_` instead of spaces to avoid the need for URL encoding, 
+i.e. `* 8-16 * * 1-5` becomes `*_8-16_*_* _1-5`.
+
+
 ## application options
 
 ```
