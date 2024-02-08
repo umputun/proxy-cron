@@ -21,7 +21,9 @@ Upon receiving a request, proxy-cron evaluates the 'crontab' query parameter to 
 ## Installation
 
 proxy-cron is available as a Docker image and be loaded from the docker hub as `umputun/proxy-cron` and from the GitHub Container Registry as
-`ghcr.io/umputun/proxy-cron`. Binary releases are also available on the [releases page](https://github.com/umputun/proxy-cron/releases).
+`ghcr.io/umputun/proxy-cron`. Tagged images are available for each release and the `latest` tag is also available for the latest build. The current master branch is also built and available as `master` tag, but it is not recommended for production use as it may be unstable.
+
+Binary releases are also available on the [releases page](https://github.com/umputun/proxy-cron/releases).
 
 For macOS users, proxy-cron can be installed using Homebrew: `brew install umputun/tap/proxy-cron`.
 
