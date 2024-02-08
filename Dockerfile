@@ -17,7 +17,7 @@ RUN \
     echo "runs outside of CI" && version=$(git rev-parse --abbrev-ref HEAD)-$(git log -1 --format=%h)-$(date +%Y%m%dT%H:%M:%S); \
     else version=${GIT_BRANCH}-${GITHUB_SHA:0:7}-$(date +%Y%m%dT%H:%M:%S); fi && \
     echo "version=$version" && \
-    go build -o /build/proxy-cron -ldflags "-X main.revision=${version} -s -w"
+    cd app && go build -o /build/proxy-cron -ldflags "-X main.revision=${version} -s -w"
 
 
 FROM ghcr.io/umputun/baseimage/app:v1.11.0 as base
