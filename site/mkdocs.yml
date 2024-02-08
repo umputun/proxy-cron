@@ -81,4 +81,4 @@ markdown_extensions:
   - pymdownx.tilde
 
 nav:
-  - CRONN: index.md
+  - PROXY-CRON: index.md
