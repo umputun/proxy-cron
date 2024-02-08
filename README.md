@@ -34,6 +34,9 @@ curl "http://localhost:8080/?endpoint=http://example.com&crontab=* 8-16 * * 1-5"
 note: the `crontab` parameter can be passed with `_` instead of spaces to avoid the need for URL encoding, 
 i.e. `* 8-16 * * 1-5` becomes `*_8-16_*_* _1-5`.
 
+See example of the basic [docker-compose.yml](https://github.com/umputun/proxy-cron/blob/master/docker-compose.yml) file
+to run proxy-cron with docker compose.
+
 
 ## Application options
 

@@ -1,0 +1,16 @@
+# example of docker-compose.yml file for proxy-cron
+services:
+  proxy-cron:
+    image: umputun/proxy-cron
+    container_name: proxy-cron
+    hostname: proxy-cronn
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      - TZ=America/New_York # set user's timezone. important for crontab schedule
+      - DEBUG=true          # enable debug mode
+      - MAX_SIZE=1024        # max size the response can be, default 1MB
