@@ -15,7 +15,7 @@ theme:
   palette:
     - scheme: slate
       media: "(prefers-color-scheme: dark)"
-      primary: red
+      primary: blue
   features:
     - navigation.instant
     - toc.follow
