@@ -9,10 +9,8 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"runtime"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/fatih/color"
@@ -54,7 +52,6 @@ func main() {
 		os.Exit(1)
 	}
 	setupLog(opts.Dbg, opts.NoColors)
-	catchSignal()
 
 	log.Printf("[DEBUG] options: %+v", opts)
 
@@ -65,7 +62,8 @@ func main() {
 		}
 	}()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx := context.Background()
+	ctx, cancel := signal.NotifyContext(ctx, os.Interrupt)
 	defer cancel()
 
 	if err := run(ctx, opts); err != nil {
@@ -236,21 +234,4 @@ func setupLog(dbg, noColors bool) {
 
 	lgr.SetupStdLogger(logOpts...)
 	lgr.Setup(logOpts...)
-}
-
-func catchSignal() {
-	// catch SIGQUIT and print stack traces
-	sigChan := make(chan os.Signal, 1)
-	go func() {
-		for range sigChan {
-			log.Print("[INFO] SIGQUIT detected")
-			stacktrace := make([]byte, 8192)
-			length := runtime.Stack(stacktrace, true)
-			if length > 8192 {
-				length = 8192
-			}
-			fmt.Println(string(stacktrace[:length]))
-		}
-	}()
-	signal.Notify(sigChan, syscall.SIGQUIT)
 }
