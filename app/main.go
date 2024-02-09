@@ -83,9 +83,11 @@ func run(ctx context.Context, opts options) error {
 
 	l := logger.New(logger.Log(lgr.Default()), logger.Prefix("[INFO]"))
 
-	middlewares := []func(http.Handler) http.Handler{rest.RealIP, rest.Ping, l.Handler, rest.Recoverer(lgr.Default())}
-	if !opts.SuppressHeaders {
-		middlewares = append(middlewares, rest.AppInfo("proxy-cron", "umputun", revision))
+	middlewares := []func(http.Handler) http.Handler{rest.AppInfo("proxy-cron", "umputun", revision),
+		rest.RealIP, rest.Recoverer(lgr.Default()), rest.Ping, l.Handler}
+	if opts.SuppressHeaders {
+		// remove first middleware, which is AppInfo responsible for adding custom headers
+		middlewares = middlewares[1:]
 	}
 	handler := rest.Wrap(http.HandlerFunc(proxyHandler(opts.MaxBodySize)), middlewares...)
 	srv := http.Server{
