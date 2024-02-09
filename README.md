@@ -45,6 +45,7 @@ to run proxy-cron with docker compose.
 ```
       --port=            port to listen on (default: 8080) [$PORT]
       --max-size=        max body size in bytes (default: 1048576) [$MAX_SIZE]
+      --suppress-headers suppress custom proxy-cron headers in the response [$SUPPRESS_HEADERS]      
       --no-colors        disable colorized logging [$NO_COLORS]
       --dbg              debug mode [$DEBUG]
 

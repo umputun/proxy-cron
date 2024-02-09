@@ -18,6 +18,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/go-pkgz/lgr"
 	"github.com/go-pkgz/rest"
+	"github.com/go-pkgz/rest/logger"
 	"github.com/robfig/cron"
 	"github.com/umputun/go-flags"
 )
@@ -32,7 +33,8 @@ type options struct {
 		Idle    time.Duration `long:"idle" env:"IDLE" default:"15s" description:"idle timeout"`
 	} `group:"timeout" namespace:"timeout" env-namespace:"TIMEOUT"`
 
-	MaxBodySize int64 `long:"max-size" env:"MAX_SIZE" default:"1048576" description:"max body size in bytes"`
+	MaxBodySize     int64 `long:"max-size" env:"MAX_SIZE" default:"1048576" description:"max body size in bytes"`
+	SuppressHeaders bool  `long:"suppress-headers" env:"SUPPRESS_HEADERS" description:"suppress custom proxy-cron headers in the response"`
 
 	NoColors bool `long:"no-colors" env:"NO_COLORS" description:"disable colorized logging"`
 	Dbg      bool `long:"dbg" env:"DEBUG" description:"debug mode"`
@@ -79,7 +81,13 @@ func main() {
 func run(ctx context.Context, opts options) error {
 	log.Printf("[INFO] proxy is running on port %d", opts.Port)
 
-	handler := rest.Wrap(http.HandlerFunc(proxyHandler(opts.MaxBodySize)), rest.AppInfo("proxy-cron", "umputun", revision), rest.Ping)
+	l := logger.New(logger.Log(lgr.Default()), logger.Prefix("[INFO]"))
+
+	middlewares := []func(http.Handler) http.Handler{rest.RealIP, rest.Ping, l.Handler, rest.Recoverer(lgr.Default())}
+	if !opts.SuppressHeaders {
+		middlewares = append(middlewares, rest.AppInfo("proxy-cron", "umputun", revision))
+	}
+	handler := rest.Wrap(http.HandlerFunc(proxyHandler(opts.MaxBodySize)), middlewares...)
 	srv := http.Server{
 		Addr:         fmt.Sprintf(":%d", opts.Port),
 		Handler:      handler,
@@ -120,8 +128,6 @@ func proxyHandler(maxBodySize int64) func(w http.ResponseWriter, r *http.Request
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		log.Printf("[INFO] proxy request: %s", r.URL.String())
-
 		endpoint := r.URL.Query().Get("endpoint")
 		crontab := r.URL.Query().Get("crontab")
 		crontab = strings.ReplaceAll(crontab, "_", " ") // replace underscores with spaces to allow easier crontab input
