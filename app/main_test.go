@@ -24,7 +24,7 @@ func TestProxyHandler_WithAllowedTime(t *testing.T) {
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(proxyHandler(100))
+	handler := proxyHandler(100)
 
 	handler.ServeHTTP(rr, req)
 
@@ -45,7 +45,7 @@ func TestProxyHandler_WithNotAllowedTime(t *testing.T) {
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(proxyHandler(100))
+	handler := proxyHandler(100)
 
 	handler.ServeHTTP(rr, req)
 
@@ -67,7 +67,7 @@ func TestProxyHandler_WithNotAllowedTimeUnderscored(t *testing.T) {
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(proxyHandler(100))
+	handler := proxyHandler(100)
 
 	handler.ServeHTTP(rr, req)
 
@@ -89,7 +89,7 @@ func TestProxyHandler_WithNInvalidCron(t *testing.T) {
 	assert.NoError(t, err)
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(proxyHandler(100))
+	handler := proxyHandler(100)
 
 	handler.ServeHTTP(rr, req)
 
@@ -112,7 +112,7 @@ func TestProxyHandler_WithNotAllowedTimeCached(t *testing.T) {
 	assert.NoError(t, err)
 
 	rrAllowed := httptest.NewRecorder()
-	handler := http.HandlerFunc(proxyHandler(100))
+	handler := proxyHandler(100)
 
 	handler.ServeHTTP(rrAllowed, reqAllowed)
 	assert.Equal(t, http.StatusOK, rrAllowed.Code)

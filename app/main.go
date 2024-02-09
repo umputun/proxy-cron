@@ -87,7 +87,7 @@ func run(ctx context.Context, opts options) error {
 		// remove first middleware, which is AppInfo responsible for adding custom headers
 		middlewares = middlewares[1:]
 	}
-	handler := rest.Wrap(http.HandlerFunc(proxyHandler(opts.MaxBodySize)), middlewares...)
+	handler := rest.Wrap(proxyHandler(opts.MaxBodySize), middlewares...)
 	srv := http.Server{
 		Addr:         fmt.Sprintf(":%d", opts.Port),
 		Handler:      handler,
@@ -122,8 +122,8 @@ var (
 )
 
 // proxyHandler handles incoming proxy requests
-func proxyHandler(maxBodySize int64) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func proxyHandler(maxBodySize int64) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -188,7 +188,7 @@ func proxyHandler(maxBodySize int64) func(w http.ResponseWriter, r *http.Request
 			return
 		}
 		log.Printf("[DEBUG] cached response from %s: %s", endpoint, strings.ReplaceAll(cachedResponse.body, "\n", " "))
-	}
+	})
 }
 
 // isAllowedTime checks if the current time falls within the crontab schedule
