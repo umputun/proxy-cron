@@ -25,7 +25,7 @@ proxy-cron is available as a Docker image and be loaded from the docker hub as `
 
 Binary releases are also available on the [releases page](https://github.com/umputun/proxy-cron/releases).
 
-For macOS users, proxy-cron can be installed using Homebrew: `brew install umputun/tap/proxy-cron`.
+For macOS users, proxy-cron can be installed using Homebrew: `brew install umputun/apps/proxy-cron`.
 
 ## Usage
 
