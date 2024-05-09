@@ -4,7 +4,6 @@ ARG GIT_BRANCH
 ARG GITHUB_SHA
 ARG CI
 
-ENV GOFLAGS="-mod=vendor"
 ENV CGO_ENABLED=0
 
 ADD . /build
@@ -20,16 +19,11 @@ RUN \
     cd app && go build -o /build/proxy-cron -ldflags "-X main.revision=${version} -s -w"
 
 
-FROM ghcr.io/umputun/baseimage/app:v1.11.0 as base
+FROM umputun/baseimage:scratch-latest
 
-FROM scratch
+# enables automatic changelog generation by tools like Dependabot
+LABEL org.opencontainers.image.source="https://github.com/umputun/proxy-cron"
 
 COPY --from=build /build/proxy-cron /srv/proxy-cron
-COPY --from=base /usr/share/zoneinfo /usr/share/zoneinfo
-COPY --from=base /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=base /etc/passwd /etc/passwd
-COPY --from=base /etc/group /etc/group
 
-USER app
-WORKDIR /srv
 ENTRYPOINT ["/srv/proxy-cron"]
