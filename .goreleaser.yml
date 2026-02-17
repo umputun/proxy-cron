@@ -42,6 +42,7 @@ archives:
     files:
       - LICENSE
       - README.md
+      - completions/*
     rlcp: true
 
 
@@ -60,6 +61,10 @@ brews:
     homepage: "https://proxy-cron.umputun.dev/"
     description: "proxy-cron is a simple HTTP proxy server designed to handle requests based on crontab-like scheduling."
     license: "MIT"
+    extra_install: |
+      bash_completion.install "completions/proxy-cron.bash" => "proxy-cron"
+      zsh_completion.install "completions/proxy-cron.zsh" => "_proxy_cron"
+      fish_completion.install "completions/proxy-cron.fish" => "proxy-cron.fish"
 
 nfpms:
   - id: proxy-cron
@@ -77,3 +82,10 @@ nfpms:
     bindir: /usr/bin
     epoch: 1
     release: 1
+    contents:
+      - src: completions/proxy-cron.bash
+        dst: /usr/share/bash-completion/completions/proxy-cron
+      - src: completions/proxy-cron.zsh
+        dst: /usr/share/zsh/vendor-completions/_proxy_cron
+      - src: completions/proxy-cron.fish
+        dst: /usr/share/fish/vendor_completions.d/proxy-cron.fish

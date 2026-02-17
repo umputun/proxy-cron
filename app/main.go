@@ -41,7 +41,9 @@ type options struct {
 var revision = "unknown"
 
 func main() {
-	fmt.Printf("proxy-cron %s\n", revision)
+	if os.Getenv("GO_FLAGS_COMPLETION") == "" {
+		fmt.Printf("proxy-cron %s\n", revision)
+	}
 	opts := options{}
 	p := flags.NewParser(&opts, flags.PrintErrors|flags.PassDoubleDash|flags.HelpFlag)
 	p.SubcommandsOptional = true
