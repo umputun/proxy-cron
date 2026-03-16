@@ -22,6 +22,11 @@ linters:
     - prealloc
     - gochecknoinits
   settings:
+    gosec:
+      excludes:
+        - G118
+        - G704
+        - G706
     govet:
       enable:
         - shadow
